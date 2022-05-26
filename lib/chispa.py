@@ -75,8 +75,11 @@ class Chispa:
     
     # Broker with user/pass and TLS
     def connect_to_broker(self):
-        with open('ca.crt', 'r') as f:
-            cert = f.read()
+        if self.ssl:
+            with open('ca.crt', 'r') as f:
+                cert = f.read()
+        else:
+            cert = ""
 
         try:
             self.client = MQTTClient(self.clientid, self.broker, self.port, user=self.user, password=self.password, ssl=self.ssl, ssl_params={'cert':cert})
