@@ -111,6 +111,7 @@ class Chispa:
     # performed in the main loop.
     def on_message_received(self, msg_topic, msg):
         message = ujson.loads(msg)
+        self.message = {}
         for key in message.keys():
             if key in self.settings:
                 self.message[key] = message[key]
