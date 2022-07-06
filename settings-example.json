@@ -2,9 +2,9 @@
 "led": false, 
 "SSL": false, 
 "Interval": 10000, 
-"Broker": "my-broker-url.com", # Broker URL
+"Broker": "my-broker-url.com",
 "User": "broker_username", 
 "Pass": "broker_password", 
-"Topic": "Organization/Lab/", # Base Topic 
+"Topic": "Organization/Lab/",
 "Port": 1883
 }
