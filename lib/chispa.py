@@ -34,6 +34,7 @@ class Chispa:
         self.mqtt_ping_time = time.ticks_ms()
         self.clientid = self.get_clientid()
         self.settings = self.get_settings(self.file)
+        self.message = {}
         self.broker = self.settings['Broker']
         self.port = self.settings['Port']
         self.user = self.settings['User']
@@ -112,19 +113,23 @@ class Chispa:
         message = ujson.loads(msg)
         for key in message.keys():
             if key in self.settings:
+                self.message[key] = message[key]
                 self.settings[key] = message[key]
-                self.updatesettings(self.settings)
-                payload = ujson.dumps(message)
-                print('DCMD:{}'.format(payload))
-                self.client.publish(self.topic + 'DDATA/' + self.clientid, payload)
+                payload = ujson.dumps({key: message[key]})
+                print(f'DCMD:{payload}')  
             else:
                 print('DCMD:Unknown command{}'.format(message))
+        self.updatesettings(self.settings)
+        payload = ujson.dumps(self.message)
+        print(f'DDATA:{payload}')
+        self.client.publish(self.topic + 'DDATA/' + self.clientid, payload)
+        
         
     def client_setup(self):
         self.client.reconnect() # ensures the MQTT client is connected
         self.client.set_callback(self.on_message_received)     # First set the callback function for incoming messages
         self.client.subscribe(self.topic + 'DCMD/' + self.clientid)   # then set the subscription topic DCMD
-        birth = {"status": "device online"}
+        birth = {"status": "online"}
         payload = ujson.dumps(birth)
         print("[Sending DBIRTH message]")
         self.client.publish(self.topic + 'DBIRTH/' + self.clientid, payload)
@@ -132,5 +137,5 @@ class Chispa:
         
     def send(self, data):
         payload = ujson.dumps(data)
-        print(data)
+        print(f'DDATA:{data}')
         self.client.publish(self.topic + 'DDATA/' + self.clientid, payload)
