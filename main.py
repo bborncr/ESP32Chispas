@@ -1,8 +1,8 @@
 # Example main file for Chispa
-from chispa import Chispa
 from time import ticks_ms
 from machine import Pin
 import network
+from chispa import Chispa
 
 print("Connecting to WLAN...")
 wlan = network.WLAN(network.STA_IF)
