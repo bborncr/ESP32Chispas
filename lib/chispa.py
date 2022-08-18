@@ -28,9 +28,14 @@ import utime as time
 from machine import unique_id
 import ujson
 
+BIRTH_MESSAGE = {"status": "online"}
+DEATH_MESSAGE = {"status": "offline"}
+
 class Chispa:
-    def __init__(self, file):
+    def __init__(self, file, birth=BIRTH_MESSAGE, death=DEATH_MESSAGE):
         self.file = file
+        self.dbirth_message = birth
+        self.ddeath_message = death
         self.mqtt_ping_time = time.ticks_ms()
         self.clientid = self.get_clientid()
         self.settings = self.get_settings(self.file)
@@ -42,7 +47,7 @@ class Chispa:
         self.ssl = self.settings['SSL']
         self.topic = self.settings['Topic']
         self.connect_to_broker()
-        self.client_setup()
+        self.client_setup(self.dbirth_message)
     
     def update(self):
         self.client.check_msg()
@@ -85,12 +90,12 @@ class Chispa:
         try:
             self.client = MQTTClient(self.clientid, self.broker, self.port, user=self.user, password=self.password, ssl=self.ssl, ssl_params={'cert':cert})
             self.client.keepalive=15 # Required for Last Will and Testament
-            self.set_ddeath_message()
+            self.set_ddeath_message(self.ddeath_message)
         except Exception as e:
             print(e)
             
-    def set_ddeath_message(self):
-        lwt = {"status": "offline"}
+    def set_ddeath_message(self, message=DEATH_MESSAGE):
+        lwt = message
         payload = ujson.dumps(lwt)
         try:
             self.client.set_last_will(self.topic + 'DDEATH/' + self.clientid, payload, retain=True)
@@ -126,11 +131,10 @@ class Chispa:
         self.client.publish(self.topic + 'DDATA/' + self.clientid, payload)
         
         
-    def client_setup(self):
+    def client_setup(self, birth):
         self.client.reconnect() # ensures the MQTT client is connected
         self.client.set_callback(self.on_message_received)     # First set the callback function for incoming messages
         self.client.subscribe(self.topic + 'DCMD/' + self.clientid)   # then set the subscription topic DCMD
-        birth = {"status": "online"}
         payload = ujson.dumps(birth)
         print("[Sending DBIRTH message]")
         self.client.publish(self.topic + 'DBIRTH/' + self.clientid, payload)

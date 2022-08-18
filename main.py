@@ -1,8 +1,7 @@
 # Example main file for Chispa
-import chispa
-import time
-from machine import Pin,SoftI2C
-import esp32
+from chispa import Chispa
+from time import ticks_ms
+from machine import Pin
 import network
 
 print("Connecting to WLAN...")
@@ -13,26 +12,26 @@ while not wlan.isconnected():
     pass
 print(wlan.ifconfig())
 
-chispa = chispa.Chispa('settings.json')
+settings_file = 'settings.json'
+
+chispa = Chispa(settings_file)
+
 clientid = chispa.get_clientid()
 print(clientid)
 
-led = Pin(25, Pin.OUT)
-
-# Timer for temperature publishing (never block the main loop)
-start_time = time.ticks_ms()
+start_time = ticks_ms()
 
 def checkwifi():
     while not wlan.isconnected():
-        time.sleep_ms(500)
+        sleep_ms(500)
         print(".")
         wlan.connect()
 
 # Returns True if interval has passed
 def ready_to_publish():
     global start_time
-    if time.ticks_ms() - start_time > chispa.settings['Interval']:
-        start_time = time.ticks_ms()
+    if ticks_ms() - start_time > chispa.settings['Interval']:
+        start_time = ticks_ms()
         return True
     else:
         return False
@@ -41,11 +40,8 @@ while True:
     checkwifi()
     chispa.update() # required in main loop
     
-    led.value(chispa.settings['led'])
-    
     if ready_to_publish(): # If the interval has not passed then don't publish
-        temperature = esp32.raw_temperature()
-        payload = {'Temp': temperature, 'Humidity': 77}
+        payload = {'Temp': 25, 'Humidity': 77}
         chispa.send(payload)
     
     
