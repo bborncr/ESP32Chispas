@@ -1,10 +1,10 @@
 {
-"led": "off", 
-"SSL": false, 
-"Interval": 10000, 
 "Broker": "my-broker-url.com",
 "User": "broker_username", 
 "Pass": "broker_password", 
 "Topic": "Organization/Lab/",
-"Port": 1883
+"Port": 1883,
+"SSL": false,
+"Interval": 10000,
+"led": "off"
 }
